@@ -1,5 +1,3 @@
-// start slingin' some d3 here.
-
 var svg = d3.select('body').append('svg')
   .attr('class', 'gameboard')
   .append('g');
@@ -71,17 +69,15 @@ enemies
 
 var update = function(data){
 // Get all circles from svg and append new data
-//debugger;
   var enemies = svg.selectAll('circle.enemy')
     .data(data);
-  // console.log(enemies.attr)
-  enemies
-  .transition().duration(3000)
-  .attr('cx', function(d){
-    d.randomMove();
-    return d.cx;
-  })
-  .attr('cy', function(d){ return d.cy; });
+    enemies
+    .transition().duration(3000)
+    .attr('cx', function(d){
+      d.randomMove();
+      return d.cx;
+    })
+    .attr('cy', function(d){ return d.cy; });
 };
 
 setInterval(function() {
@@ -89,26 +85,34 @@ setInterval(function() {
 }, 3000);
 
 setInterval(function() {
+
+}, 100);
+
+var getDistance = function(firstX, firstY, secondX, secondY) {
+  return Math.sqrt(Math.pow(firstX - secondX, 2) + Math.pow(firstY - secondY, 2));
+};
+
+d3.select('svg').on('mousemove', function() {
+  var coordinates = d3.mouse(this);
+  playerData[0].cx = coordinates[0];
+  playerData[0].cy = coordinates[1];
+  players.attr('cx', coordinates[0]).attr('cy', coordinates[1]);
+});
+
+var detectCollisions = function() {
   currentScore += 1;
-  // console.log([d3.event.x, d3.event.y]);
   d3.select('.current span').text(currentScore);
 
   // position of the player
   var coordinates = [playerData[0].cx, playerData[0].cy];
-  // console.log(coordinates);
+
   var diameter = enemyData[0].diameter;
 
   for (var i = 0; i < enemyData.length; i++){
     var enemyCx = enemyData[i].cx;
     var enemyCy = enemyData[i].cy;
-    // console.log(enemyCx, enemyCy);
 
-    // xOverlap = coordinates[0] >= enemyCx - diameter && coordinates[0] <= enemyCx + diameter;
-    // yOverlap = coordinates[1] >= enemyCy - diameter && coordinates[1] <= enemyCy + diameter;
     if (getDistance(enemyCx, enemyCy, coordinates[0], coordinates[1]) < diameter){
-      console.log('collision detected', xOverlap, yOverlap);
-      console.log('player coordinates', coordinates);
-      console.log('enemy coordinates', [enemyCx, enemyCy]);
       if(currentScore > highScore) {
         highScore = currentScore;
         d3.select('.high span').text(highScore);
@@ -118,21 +122,6 @@ setInterval(function() {
       throttled();
     }
   }
-}, 15);
-
-var getDistance = function(firstX, firstY, secondX, secondY) {
-  return Math.sqrt(Math.pow(firstX - secondX, 2) + Math.pow(firstY - secondY, 2));
 };
 
-d3.select('svg').on('mousemove', function() {
-  // console.log(d3.mouse(this));
-  // console.dir(this);
-  // window.coord = [d3.event.x, d3.event.y];
-  var coordinates = d3.mouse(this);
-  // console.log(coordinates);
-  playerData[0].cx = coordinates[0];
-  playerData[0].cy = coordinates[1];
-
-
-  players.attr('cx', coordinates[0]).attr('cy', coordinates[1]);
-});
+d3.timer(detectCollisions);
